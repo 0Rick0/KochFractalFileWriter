@@ -6,6 +6,7 @@
 package kochgenerator;
 
 import calculate.KochManager;
+import java.util.Scanner;
 
 /**
  *
@@ -28,31 +29,29 @@ public class KochGenerator {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        for(int i = 0; i<args.length; i++){
-            if(args[i].equalsIgnoreCase("-W")){
-                WAIT_EDGE = false;
+        boolean running = true;
+        Scanner s = new Scanner(System.in);
+        KochManager km = new KochManager();
+        km.setFile("C:\\Users\\rick-\\outFile.edg");
+        while(running){
+            String input = s.nextLine();
+            if(input.equals("quit")){
+                running=false;
             }
-            if(args[i].equalsIgnoreCase("-l")){
-                if(i==args.length-1){
-                    System.out.println("Error parsing Level Missing argument");
-                    System.exit(-1);
-                }
-                try{
-                    LEVEL = Integer.valueOf(args[++i]);
-                }catch(NumberFormatException e){
-                    System.out.println("Error parsing Level NaN");
-                    System.exit(-2);
-                }
+            if(input.equalsIgnoreCase("wait edge")){
+                WAIT_EDGE =! WAIT_EDGE;
+                System.out.println("Now " + (WAIT_EDGE?"waiting":"not waiting"));
+            }
+            if(input.startsWith("level")){
+                LEVEL = Integer.valueOf(input.substring(6));
+                System.out.println("Level = " + LEVEL);
+            }
+            if(input.equalsIgnoreCase("calculate")){
+                km.changeLevel(LEVEL);
+                km.calculateAndSave();
+                System.out.println("Took: " + km.getTime());
             }
         }
-        KochManager km = new KochManager();
-        km.changeLevel(LEVEL);
-        km.setFile("outFile.edg");
-        
-        km.calculateAndSave();
-        
-        System.out.println("Took: " + km.getTime());
-        
     }
     
 }

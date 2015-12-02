@@ -5,12 +5,14 @@
  */
 package calculate;
 
+import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -41,13 +43,13 @@ public class KochManager{
     private ExecutorService pool;
     private CountDownLatch lat;
     
-    private File outputFile;
+    private RandomAccessFile outputFile;
     
     Runnable lt,rt,bt;
     Runnable rEnd;
     
     public KochManager(){
-        pool = Executors.newFixedThreadPool(3);
+        
                
         //save the data
         kf = new KochFractal(this);
@@ -60,15 +62,8 @@ public class KochManager{
     
     public boolean setFile(String filename){
         try {
-            outputFile = new File(filename);
-            if(!outputFile.exists() && !outputFile.createNewFile()){
-                outputFile = null;
-                return false;
-            }
-            if(!outputFile.canWrite()){
-                outputFile = null;
-                return false;
-            }
+            outputFile = new RandomAccessFile(filename,"rw");
+            
             return true;
         } catch (IOException ex) {
             Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
@@ -86,6 +81,7 @@ public class KochManager{
     }
     
     public void calculateAndSave(){
+        pool = Executors.newFixedThreadPool(3);
         System.out.println("Generating edges " + kf.getNrOfEdges() + " for level " + kf.getLevel());
         //starte timing the calculating
         ts = new TimeStamp();
@@ -107,14 +103,13 @@ public class KochManager{
         
         
         OutputStream str;
-        try {
-            str = new FileOutputStream(outputFile,false);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
-            return;
-        }
         
-        DataOutputStream dout = new DataOutputStream(str);
+        try {
+            outputFile.seek(0);
+        } catch (IOException ex) {
+            Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        DataOutput dout = (DataOutput)outputFile;
         
         try {
             dout.writeInt(level);
@@ -132,8 +127,8 @@ public class KochManager{
             @Override
             public void run() {
                 kf.generateLeftEdge(lat, (Edge e) -> {
-                    pEdges.add(e);
-                    edgesQ.add(e);
+                    //pEdges.add(e);
+                    //edgesQ.add(e);
                     synchronized(dout){
                         try {
                             write(e,dout);
@@ -157,8 +152,8 @@ public class KochManager{
             @Override
             public void run() {
                 kf.generateRightEdge(lat, (Edge e) -> {
-                    pEdges.add(e);
-                    edgesQ.add(e);
+                    //pEdges.add(e);
+                    //edgesQ.add(e);
                     synchronized(dout){
                         try {
                             write(e,dout);
@@ -183,8 +178,8 @@ public class KochManager{
             @Override
             public void run() {
                 kf.generateBottomEdge(lat, (Edge e) -> {
-                    pEdges.add(e);
-                    edgesQ.add(e);
+                    //pEdges.add(e);
+                    //edgesQ.add(e);
                     synchronized(dout){
                         try {
                             write(e,dout);
@@ -217,7 +212,7 @@ public class KochManager{
         }
     }
     
-    private void write(Edge e, DataOutputStream dout) throws IOException{
+    private void write(Edge e, DataOutput dout) throws IOException{
         dout.writeDouble(e.X1);
         dout.writeDouble(e.Y1);
         dout.writeDouble(e.X2);
