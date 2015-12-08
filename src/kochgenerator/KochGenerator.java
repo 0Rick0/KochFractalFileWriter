@@ -14,7 +14,7 @@ import java.util.Scanner;
  */
 public class KochGenerator {
 
-    private static Boolean WAIT_EDGE = true;
+    private static Boolean WAIT_EDGE = false;
     private static int LEVEL = 1;
     
     public static final Boolean getWaitEdge(){
@@ -33,7 +33,13 @@ public class KochGenerator {
         Scanner s = new Scanner(System.in);
         KochManager km = new KochManager();
         km.setFile("C:\\Users\\rick-\\outFile.edg");
+        System.out.println("Command:\n"
+                + "quit\t\t - quit program\n"
+                + "wait edge \t - toggle wait after edge, default false\n"
+                + "level [n]\t - set the generator level to [n]\n"
+                + "calculate \t - calculate the edges to the ram file");
         while(running){
+            System.out.print(">");
             String input = s.nextLine();
             if(input.equals("quit")){
                 running=false;
