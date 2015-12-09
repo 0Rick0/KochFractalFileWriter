@@ -6,6 +6,7 @@
 package kochgenerator;
 
 import calculate.KochManager;
+import java.util.Date;
 import java.util.Scanner;
 
 /**
@@ -32,7 +33,7 @@ public class KochGenerator {
         boolean running = true;
         Scanner s = new Scanner(System.in);
         KochManager km = new KochManager();
-        km.setFile("C:\\Users\\rick-\\outFile.edg");
+        
         System.out.println("Command:\n"
                 + "quit\t\t - quit program\n"
                 + "wait edge \t - toggle wait after edge, default false\n"
@@ -53,6 +54,7 @@ public class KochGenerator {
                 System.out.println("Level = " + LEVEL);
             }
             if(input.equalsIgnoreCase("calculate")){
+                km.setFile("C:\\edges\\edge_"  + System.currentTimeMillis() + ".edg");
                 km.changeLevel(LEVEL);
                 km.calculateAndSave();
                 System.out.println("Took: " + km.getTime());

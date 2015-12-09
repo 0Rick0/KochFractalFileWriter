@@ -13,6 +13,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -43,7 +45,7 @@ public class KochManager{
     private ExecutorService pool;
     private CountDownLatch lat;
     
-    private RandomAccessFile outputFile;
+    private File outputFile;
     
     Runnable lt,rt,bt;
     Runnable rEnd;
@@ -62,8 +64,8 @@ public class KochManager{
     
     public boolean setFile(String filename){
         try {
-            outputFile = new RandomAccessFile(filename,"rw");
-            
+            outputFile = new File(filename);
+            outputFile.createNewFile();
             return true;
         } catch (IOException ex) {
             Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
@@ -101,15 +103,13 @@ public class KochManager{
 //                }
 //        }
         
-        
-        OutputStream str;
-        
+        DataOutputStream dout;
         try {
-            outputFile.seek(0);
-        } catch (IOException ex) {
+            dout = new DataOutputStream(new FileOutputStream(outputFile));
+        } catch (FileNotFoundException ex) {
             Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
+            return;
         }
-        DataOutput dout = (DataOutput)outputFile;
         
         try {
             dout.writeInt(level);
@@ -205,9 +205,13 @@ public class KochManager{
 
         try {
             lat.await();
+            dout.flush();
+            dout.close();
+            Files.move(outputFile.toPath(), new File(outputFile.getParent()+File.separator+"done"+File.separator+outputFile.getName()).toPath());
+            //System.out.println(outputFile.renameTo(new File(outputFile.getParent()+"done"+File.pathSeparator+outputFile.getName())));
             ts.setEnd();
             pool.shutdown();
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException | IOException ex) {
             Logger.getLogger(KochManager.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
